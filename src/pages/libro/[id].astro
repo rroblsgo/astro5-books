@@ -1,0 +1,84 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '@/layouts/Layout.astro';
+import Prose from '@/components/Prose.astro';
+import { SHOW_BUY_BUTTON } from 'astro:env/server';
+import AmazonLogo from '@/components/AmazonLogo.astro';
+import BookScore from '@/components/BookScore.astro';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+
+  return books.map((book) => ({
+    params: { id: book.slug },
+    props: { book },
+  }));
+}
+
+const { book } = Astro.props;
+const { data, slug } = book;
+const { title, author, img, readtime, description, buy } = data;
+
+const { Content } = await render(book);
+
+export const prerender = true;
+---
+
+<Layout title={`${title} - Dev Books`}>
+  <div class="flex gap-12 justify-center mt-20">
+    <aside class="flex flex-col items-center gap-8">
+      <a href="/" class="hover:underline opacity-70">← Volver atrás</a>
+      <img
+        transition:name={`img-${slug}`}
+        class="rounded w-72 h-auto"
+        src={`/${img}`}
+        alt={title}
+      />
+      <BookScore server:defer id="{slug}">
+        <span slot="fallback" class="text-xs opacity-70"
+          >Cargando puntuación. . .</span
+        >
+      </BookScore>
+      {
+        SHOW_BUY_BUTTON && (
+          <a
+            href={buy.spain}
+            title="Comprar libro"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-balance inline-flex gap-2 items-center bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-bold py-2 px-4 rounded-lg border border-yellow-500 transition duration-200 ease-in-out hover:scale-105 justify-center text-center"
+          >
+            Comprar en Amazon España
+            <AmazonLogo />
+          </a>
+        )
+      }
+    </aside>
+
+    <main class="max-w-3xl">
+      <h1 transition:name={`title-${slug}`} class="text-4xl font-bold mb-6">
+        {title}
+      </h1>
+      <div>
+        <Prose>
+          <Content />
+        </Prose>
+      </div>
+    </main>
+  </div>
+</Layout>
+
+<!-- <script>
+  import { SCORE_API_ENDPOINT } from 'astro:env/client';
+  const scoreElement = document.querySelector('#score');
+  fetch(SCORE_API_ENDPOINT)
+    .then((res) => res.text())
+    .then((scoreValue) => {
+      if (scoreElement) {
+        scoreElement.innerHTML = `⭐ puntuación: ${scoreValue.trim()}/5`;
+      }
+    })
+    .catch((err) => {
+      console.error('Error fetching score data:', err);
+    });
+</script> -->

@@ -1,16 +1,58 @@
 ---
-import '@/styles/global.css';
+import Layout from '@/layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+const books = await getCollection('books');
+export const prerender = true;
+// console.log(books);
+// console.log(books[0].data.buy.usa);
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>Astro</title>
-  </head>
-  <body>
-    <h1 class="text-2xl font-bold p-12">Astro</h1>
-  </body>
-</html>
+<Layout title="Dev Books, libros para programadores">
+  <main>
+    <h1 class="py-2 text-center text-7xl font-extrabold mb-10">
+      Dev 👨‍💻
+      <span class="block">Books</span>
+    </h1>
+  </main>
+  <section aria-label="Libros recomendados para programadores">
+    <div class="px-4 mx-auto max-w-screen-xl">
+      <div class="grid gap-6 md:grid-cols-2">
+        {
+          books.map((book) => {
+            const { slug, data } = book;
+            const { title, author, img, readtime, description, buy } = data;
+
+            return (
+              <article class="flex">
+                <a
+                  href={`/libro/${slug}`}
+                  class="mb-2 xl:mb-0 transition hover:scale-110"
+                >
+                  <img
+                    transition:name={`img-${slug}`}
+                    class="mr-5 w-48 rounded"
+                    src={`/${img}`}
+                    alt={title}
+                  />
+                </a>
+
+                <div class="flex flex-col justify-center">
+                  <h2
+                    transition:name={`title-${slug}`}
+                    class="mb-2 text-2xl font-bold leading-tight text-white"
+                  >
+                    {title}
+                  </h2>
+
+                  <p class="mb-4 text-gray-300 max-w-sm">{description}</p>
+                  <span class="text-xs">⏳ Lectura en {readtime} minutos</span>
+                  <span class="text-xs py-2">Autor: {author} </span>
+                </div>
+              </article>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+</Layout>
